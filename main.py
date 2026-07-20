@@ -79,6 +79,13 @@ class EncriptadoVecinalNube:
 motor = EncriptadoVecinalNube()
 
 # RUTA DE LA API PARA ENCRIPTAR Y RASTREAR
+@app.route('/', methods=['GET', 'POST'])
+def home():
+    return "Servidor C0MRADE en linea."
+
+
+
+
 @app.route('/procesar', methods=['POST'])
 def procesar():
     datos = request.json
