@@ -18,7 +18,7 @@ class EncriptadorVecinalNube:
             'Z': ')', 'X': '_', 'C': '+', 'V': '=', 'B': '[', 'N': ']', 'M': '{', ',': '<', '.': ':'
         }
         self.selfsubcapa_letras = {v: k for k, v in self.subcaps_simbolos.items()}
-        self.filas_simbolos = ["1234567890", "!@#$%^&*()", "}_+-=[]"]
+        self.filas_simbolos = ["1234567890", "!@#$%^&*()", ")_+=-]{"]
 
     def _buscar_posicion(self, caracter, matriz):
         for num_fila, fila in enumerate(matriz):
