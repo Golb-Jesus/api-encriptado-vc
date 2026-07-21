@@ -7,7 +7,7 @@ import io
 app = Flask(__name__)
 
 # ENLACE UNIVERSAL CSV DE TU GOOGLE SHEETS
-URL_EXCEL_CSV = "https://google.com"
+URL_EXCEL_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlXTOefoSH6jgC8QW3XMKFMfespM0EGgjdYQUq7cebpJVMt1p4JvKvZtuSI9honNZN0JJux7UWU8Dq/pub?output=csv"
 
 class EncriptadorVecinalNube:
     def __init__(self):
