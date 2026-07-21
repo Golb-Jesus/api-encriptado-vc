@@ -106,25 +106,24 @@ def procesar():
             return jsonify({"resultado": "Error: Licencia no válida o usuario no registrado."}), 401
         if usuarios_dict[id_usuario].get("estado") != "activo":
             return jsonify({"resultado": "Error: Tu suscripción ha vencido. Renueva tu pago."}), 403
+            
     except Exception as e:
         return jsonify({"resultado": f"Error de base de datos: {str(e)}"}), 500
+
+    # Continuación lógica de tu algoritmo de cifrado original
+    texto_original = datos.get("texto", "")
+    direccion = datos.get("direccion", "L")
+    clave = datos.get("clave", "LR")
+    borde = datos.get("borde", "C")
+    simbolos = datos.get("simbolos", True)
+    cifrar = datos.get("cifrar", True)
     
-    datos = request.json
-    texto = datos.get('texto', '')
-    direccion = datos.get('direccion', 'L')
-    clave = datos.get('clave', 'LR')
-    borde = datos.get('borde', 'C')
-    simbolos = datos.get('simbolos', True)
-    cifrar = datos.get('cifrar', True)
-    usuario = datos.get('usuario', 'Desconocido')
-
-    # --- RASTREADOR EN TIEMPO REAL ---
-    accion = "CIFRAR" if cifrar else "DESCIFRAR"
-    ahora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[{ahora}] [ALERTA DE USO] El usuario '{usuario}' ejecuto la accion: {accion}")
-
-    resultado = motor.procesar_texto(texto, direccion, clave, borde, simbolos, cifrar=cifrar)
-    return jsonify({'resultado': resultado})
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+    # Ejecutamos el motor de cifrado que definiste arriba en la línea 84
+    resultado_final = motor.procesar_mensaje(
+        texto=texto_original,
+        modo_direction=direccion,
+        modo_borde=borde,
+        cifrar=cifrar
+    )
+    
+    return jsonify({"resultado": resultado_final})
