@@ -11,11 +11,11 @@ URL_EXCEL_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlXTOefoSH6jgC
 
 class EncriptadorVecinalNube:
     def __init__(self):
-        self.filas = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"]
+        self.filas = ["QWERTYUIOP", "ASDFGHJKLÑ", "ZXCVBNM"]
         self.subcaps_simbolos = {
             'Q': '1', 'W': '2', 'E': '3', 'R': '4', 'T': '5', 'Y': '6', 'U': '7', 'I': '8', 'O': '9', 'P': '0',
-            'A': '!', 'S': '@', 'D': '#', 'F': '$', 'G': '%', 'H': '^', 'J': '&', 'K': '*', 'L': '(',
-            'Z': ')', 'X': '_', 'C': '+', 'V': '=', 'B': '[', 'N': ']', 'M': '{', ',': '}', '.': ':',
+            'A': '!', 'S': '@', 'D': '#', 'F': '$', 'G': '%', 'H': '^', 'J': '&', 'K': '*', 'L': '(', 'Ñ': '>',
+            'Z': ')', 'X': '_', 'C': '+', 'V': '=', 'B': '[', 'N': ']', 'M': '{', ',': '<', '.': ':'
         }
         self.selfsubcapa_letras = {v: k for k, v in self.subcaps_simbolos.items()}
         self.filas_simbolos = ["1234567890", "!@#$%^&*(", ")]_+=[]{}:"]
