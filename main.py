@@ -5,20 +5,21 @@ import requests
 import csv
 import io
 
-URL_EXCEL_CSV = "https://google.com"
-
 app = Flask(__name__)
 
-class EncriptadoVecinalNube:
+# ENLACE UNIVERSAL CSV DE TU GOOGLE SHEETS
+URL_EXCEL_CSV = "https://google.com"
+
+class EncriptadorVecinalNube:
     def __init__(self):
         self.filas = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"]
-        self.subcapa_simbolos = {
-            'Q':'1', 'W':'2', 'E':'3', 'R':'4', 'T':'5', 'Y':'6', 'U':'7', 'I':'8', 'O':'9', 'P':'0',
-            'A':'!', 'S':'@', 'D':'#', 'F':'$', 'G':'%', 'H':'^', 'J':'&', 'K':'*', 'L':'(',
-            'Z':')', 'X':'-', 'C':'=', 'V':'[', 'B':']', 'N':'{', 'M':'}'
+        self.subcaps_simbolos = {
+            'Q': '1', 'W': '2', 'E': '3', 'R': '4', 'T': '5', 'Y': '6', 'U': '7', 'I': '8', 'O': '9', 'P': '0',
+            'A': '!', 'S': '@', 'D': '#', 'F': '$', 'G': '%', 'H': '^', 'J': '&', 'K': '*', 'L': '(',
+            'Z': ')', 'X': '_', 'C': '+', 'V': '=', 'B': '[', 'N': ']', 'M': '{', ',': '}', '.': ':',
         }
-        self.subcapa_letras = {v: k for k, v in self.subcapa_simbolos.items()}
-        self.filas_simbolos = ["1234567890", "!@#$%^&*()", ")-=[]{}"]
+        self.selfsubcapa_letras = {v: k for k, v in self.subcaps_simbolos.items()}
+        self.filas_simbolos = ["1234567890", "!@#$%^&*(", ")]_+=[]{}:"]
 
     def _buscar_posicion(self, caracter, matriz):
         for num_fila, fila in enumerate(matriz):
@@ -27,98 +28,81 @@ class EncriptadoVecinalNube:
                 return num_fila, idx, caracter.isupper()
         return None, None, False
 
-    def procesar_caracter(self, car, modo_direccion, modo_borde, cifrar=True):
-        es_simbolo = car in self.subcapa_letras or (car in "".join(self.filas_simbolos) and car not in string.ascii_letters)
+    def procesar_caracter(self, car, modo_direction, modo_borde, cifrar=True):
+        es_simbolo = car in self.subcaps_simbolos or (car in "".join(self.filas_simbolos) and car not in string.ascii_letters)
         matriz_actual = self.filas_simbolos if es_simbolo else self.filas
-        
+
         num_fila, idx, es_mayuscula = self._buscar_posicion(car, matriz_actual)
         if num_fila is None:
             return car
 
-        fila = matriz_actual[num_fila]
-        largo_fila = len(fila)
+        fila_str = matriz_actual[num_fila]
+        largo_fila = len(fila_str)
 
-        desplazamiento = 1 if modo_direccion == 'R' else -1
-        if not cifrar:
-            desplazamiento *= -1
+        paso = 1 if modo_direction == "R" else -1
+        nuevo_idx = idx + paso
 
-        nuevo_idx = idx + desplazamiento
+        if modo_borde == "C":
+            nuevo_idx = nuevo_idx % largo_fila
+        else:
+            if nuevo_idx < 0 or nuevo_idx >= largo_fila:
+                nuevo_idx = idx
 
-        if nuevo_idx < 0: 
-            if modo_borde == 'C': 
-                nuevo_idx = largo_fila - 1
-            else: 
-                nuevo_idx = 1
-        elif nuevo_idx >= largo_fila: 
-            if modo_borde == 'C': 
-                nuevo_idx = 0
-            else: 
-                nuevo_idx = largo_fila - 2
+        car_procesado = fila_str[nuevo_idx]
 
-        resultado = fila[nuevo_idx]
-        return resultado if es_mayuscula or es_simbolo else resultado.lower()
+        if not es_simbolo and cifrar:
+            car_procesado = self.subcaps_simbolos.get(car_procesado, car_procesado)
+        elif es_simbolo and not cifrar:
+            car_procesado = self.selfsubcapa_letras.get(car_procesado, car_procesado)
 
-    def procesar_texto(self, texto, modo_dir_fijo, clave, modo_borde, usar_simbolos, cifrar=True):
+        return car_procesado if es_mayuscula or es_simbolo else car_procesado.lower()
+
+    def procesar_mensaje(self, texto, modo_direction, modo_borde, cifrar=True):
         texto_resultado = []
-        for i, car in enumerate(texto):
-            if modo_dir_fijo == "L":
-                direccion = "L"
-            elif modo_dir_fijo == "R":
-                direccion = "R"
-            else:
-                direccion = clave[i % len(clave)].upper() if clave else "L"
-            
-            if cifrar and usar_simbolos and car.upper() in self.subcapa_simbolos:
-                if modo_dir_fijo != "K" or i % 2 == 1:
-                    car = self.subcapa_simbolos[car.upper()]
-
-            car_procesado = self.procesar_caracter(car, direccion, modo_borde, cifrar=cifrar)
-            
-            if not cifrar and usar_simbolos and car_procesado in self.subcapa_letras:
-                letra = self.subcapa_letras[car_procesado]
-                car_procesado = letra if car.isupper() else letra.lower()
-
+        for car in texto:
+            car_procesado = self.procesar_caracter(car, modo_direction, modo_borde, cifrar)
             texto_resultado.append(car_procesado)
         return "".join(texto_resultado)
 
-motor = EncriptadoVecinalNube()
+motor = EncriptadorVecinalNube()
 
-# RUTA DE LA API PARA ENCRIPTAR Y RASTREAR
+# RUTA DE BIENVENIDA
 @app.route('/', methods=['GET', 'POST'])
 def home():
-    return "Servidor C0MRADE en linea."
+    return "Servidor C0MRADE en línea."
 
-
-
-
+# RUTA PRINCIPAL DE CIFRADO CON EXCEL AUTOMÁTICO
 @app.route('/procesar', methods=['POST'])
 def procesar():
     datos = request.json
     id_usuario = datos.get("usuario", "Anonimo")
     
     try:
+        # El servidor descarga el Excel modificado directamente de Google
         respuesta = requests.get(URL_EXCEL_CSV)
         texto_csv = respuesta.content.decode('utf-8')
         lector = csv.DictReader(io.StringIO(texto_csv))
+        
+        # Estructuramos la lista en un diccionario limpio
         usuarios_dict = {fila['usuario']: fila for fila in lector if 'usuario' in fila}
         
+        # 1. VALIDAR SI EL USUARIO EXISTE EN EL EXCEL
         if id_usuario not in usuarios_dict:
             return jsonify({"resultado": "Error: Licencia no válida o usuario no registrado."}), 401
+            
+        # 2. VALIDAR SI ESTÁ ACTIVO EN EL EXCEL
         if usuarios_dict[id_usuario].get("estado") != "activo":
             return jsonify({"resultado": "Error: Tu suscripción ha vencido. Renueva tu pago."}), 403
-            
+
     except Exception as e:
         return jsonify({"resultado": f"Error de base de datos: {str(e)}"}), 500
 
-    # Continuación lógica de tu algoritmo de cifrado original
+    # Lógica de cifrado conectada al motor
     texto_original = datos.get("texto", "")
     direccion = datos.get("direccion", "L")
-    clave = datos.get("clave", "LR")
     borde = datos.get("borde", "C")
-    simbolos = datos.get("simbolos", True)
     cifrar = datos.get("cifrar", True)
     
-    # Ejecutamos el motor de cifrado que definiste arriba en la línea 84
     resultado_final = motor.procesar_mensaje(
         texto=texto_original,
         modo_direction=direccion,
@@ -127,3 +111,6 @@ def procesar():
     )
     
     return jsonify({"resultado": resultado_final})
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
