@@ -1,5 +1,4 @@
 import string
-from datetime import datetime
 from flask import Flask, request, jsonify
 import requests
 import csv
@@ -66,38 +65,48 @@ class EncriptadorVecinalNube:
 
 motor = EncriptadorVecinalNube()
 
-# RUTA DE BIENVENIDA
 @app.route('/', methods=['GET', 'POST'])
 def home():
     return "Servidor C0MRADE en línea."
 
-# RUTA PRINCIPAL DE CIFRADO CON EXCEL AUTOMÁTICO
 @app.route('/procesar', methods=['POST'])
 def procesar():
     datos = request.json
-    id_usuario = datos.get("usuario", "Anonimo")
+    id_usuario = str(datos.get("usuario", "")).strip()
     
     try:
-        # El servidor descarga el Excel modificado directamente de Google
         respuesta = requests.get(URL_EXCEL_CSV)
         texto_csv = respuesta.content.decode('utf-8')
         lector = csv.DictReader(io.StringIO(texto_csv))
         
-        # Estructuramos la lista en un diccionario limpio
-        usuarios_dict = {fila['usuario']: fila for fila in lector if 'usuario' in fila}
-        
-        # 1. VALIDAR SI EL USUARIO EXISTE EN EL EXCEL
-        if id_usuario not in usuarios_dict:
-            return jsonify({"resultado": "Error: Licencia no válida o usuario no registrado."}), 401
+        usuarios_dict = {}
+        for fila in lector:
+            fila_limpia = {str(k).strip().lower(): str(v).strip() for k, v in fila.items() if k is not None}
             
-        # 2. VALIDAR SI ESTÁ ACTIVO EN EL EXCEL
-        if usuarios_dict[id_usuario].get("estado") != "activo":
-            return jsonify({"resultado": "Error: Tu suscripción ha vencido. Renueva tu pago."}), 403
+            key_usuario = None
+            for k in fila_limpia.keys():
+                if "usuario" in k or "user" in k:
+                    key_usuario = k
+                    break
+            
+            if key_usuario and fila_limpia[key_usuario]:
+                nombre_usuario = fila_limpia[key_usuario]
+                usuarios_dict[nombre_usuario] = fila_limpia
+
+        # 1. VALIDAR SI EL USUARIO EXISTE
+        if id_usuario not in usuarios_dict:
+            return jsonify({"resultado": f"Error: Usuario '{id_usuario}' no registrado en el Excel."}), 401
+            
+        # 2. VALIDAR SI ESTÁ ACTIVO
+        datos_usuario = usuarios_dict[id_usuario]
+        estado_usuario = datos_usuario.get("estado", "").lower() or datos_usuario.get("status", "").lower()
+        
+        if estado_usuario != "activo":
+            return jsonify({"resultado": f"Error: Suscripción vencida o {estado_usuario}."}), 403
 
     except Exception as e:
-        return jsonify({"resultado": f"Error de base de datos: {str(e)}"}), 500
+        return jsonify({"resultado": f"Error de lectura en Excel: {str(e)}"}), 500
 
-    # Lógica de cifrado conectada al motor
     texto_original = datos.get("texto", "")
     direccion = datos.get("direccion", "L")
     borde = datos.get("borde", "C")
