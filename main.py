@@ -58,6 +58,10 @@ class EncriptadorVecinalNube:
 
     def procesar_mensaje(self, texto, modo_direction, modo_borde, cifrar=True):
         texto_resultado = []
+        # Si estamos descifrando, invertimos la dirección del paso automáticamente
+        if not cifrar:
+            modo_direction = "L" if modo_direction == "R" else "R"
+            
         for car in texto:
             car_procesado = self.procesar_caracter(car, modo_direction, modo_borde, cifrar)
             texto_resultado.append(car_procesado)
