@@ -1,6 +1,11 @@
 import string
 from datetime import datetime
 from flask import Flask, request, jsonify
+import requests
+import csv
+import io
+
+URL_EXCEL_CSV = "https://google.com"
 
 app = Flask(__name__)
 
@@ -88,6 +93,22 @@ def home():
 
 @app.route('/procesar', methods=['POST'])
 def procesar():
+    datos = request.json
+    id_usuario = datos.get("usuario", "Anonimo")
+    
+    try:
+        respuesta = requests.get(URL_EXCEL_CSV)
+        texto_csv = respuesta.content.decode('utf-8')
+        lector = csv.DictReader(io.StringIO(texto_csv))
+        usuarios_dict = {fila['usuario']: fila for fila in lector if 'usuario' in fila}
+        
+        if id_usuario not in usuarios_dict:
+            return jsonify({"resultado": "Error: Licencia no válida o usuario no registrado."}), 401
+        if usuarios_dict[id_usuario].get("estado") != "activo":
+            return jsonify({"resultado": "Error: Tu suscripción ha vencido. Renueva tu pago."}), 403
+    except Exception as e:
+        return jsonify({"resultado": f"Error de base de datos: {str(e)}"}), 500
+    
     datos = request.json
     texto = datos.get('texto', '')
     direccion = datos.get('direccion', 'L')
