@@ -5,30 +5,29 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-# Ambas cadenas tienen exactamente 27 caracteres.
-# Las posiciones coinciden 1 a 1 según la distribución original del teclado:
-# Q->1, W->2, E->3 ... A->@, S-># ... Z->*, X->_ , C->' ... M->?
+# Ambas cadenas tienen exactamente 27 caracteres ÚNICOS.
+# Se cambió el segundo '_' por '=' para evitar duplicados al descifrar.
 LETRAS   = "QWERTYUIOPASDFGHJKLÑZXCVBNM"
-SIMBOLOS = "1234567890@#$_&-+()/*_':;!?"
+SIMBOLOS = "1234567890@#$_&-+()/*=':;!?"
 
 def procesar_caracter(car, direccion, cifrar):
     origen = LETRAS if cifrar else SIMBOLOS
     destino = SIMBOLOS if cifrar else LETRAS
     
-    # Si el carácter no está en la matriz (ej. espacios o signos desconocidos), no se altera
+    # Si el carácter no pertenece a la matriz (ej. espacios), se mantiene igual
     if car not in origen:
         return car
         
     idx = origen.index(car)
     largo = len(origen)
     
-    # Dirección del movimiento
+    # Determinar dirección del desplazamiento
     if cifrar:
         paso = 1 if direccion == "R" else -1
     else:
         paso = -1 if direccion == "R" else 1
         
-    # El módulo (%) maneja los límites dando la vuelta automáticamente
+    # El operador módulo (%) permite dar la vuelta sin errores de índice
     nuevo_idx = (idx + paso) % largo
     
     return destino[nuevo_idx]
