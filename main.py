@@ -4,14 +4,12 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-# Filas de letras (Mayúsculas)
 FILAS_LETRAS = [
     "QWERTYUIOP",
     "ASDFGHJKLÑ",
     "ZXCVBNM"
 ]
 
-# Filas de símbolos del celular emparejadas en tamaño (10, 10 y 7)
 FILAS_SIMBOLOS = [
     "1234567890",
     "@#$_&-+()/",
@@ -19,7 +17,6 @@ FILAS_SIMBOLOS = [
 ]
 
 def procesar_caracter(car, direccion, cifrar):
-    # 1. Determinar en qué matriz buscar (Letras o Símbolos)
     matriz_origen = FILAS_LETRAS if cifrar else FILAS_SIMBOLOS
     matriz_destino = FILAS_SIMBOLOS if cifrar else FILAS_LETRAS
     
@@ -32,7 +29,6 @@ def procesar_caracter(car, direccion, cifrar):
             idx = fila.index(car)
             break
             
-    # Si el carácter no está en la matriz, se deja intacto
     if num_fila is None:
         return car
         
@@ -40,7 +36,6 @@ def procesar_caracter(car, direccion, cifrar):
     fila_destino_str = matriz_destino[num_fila]
     largo_fila = len(fila_origen_str)
     
-    # 2. Configurar el sentido del desplazamiento
     if cifrar:
         paso = 1 if direccion == "R" else -1
     else:
@@ -48,13 +43,11 @@ def procesar_caracter(car, direccion, cifrar):
         
     nuevo_idx = idx + paso
     
-    # 3. Lógica de Rebote en las Orillas Físicas del Teclado Celular
     if nuevo_idx >= largo_fila:
         nuevo_idx = idx - 1
     elif nuevo_idx < 0:
         nuevo_idx = idx + 1
         
-    # 4. Devolver el carácter transformado de la matriz opuesta
     return fila_destino_str[nuevo_idx]
 
 def procesar_mensaje(texto, direccion, cifrar=True):
