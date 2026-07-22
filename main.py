@@ -32,21 +32,17 @@ def procesar_caracter(car, direccion, cifrar):
     if num_fila is None:
         return car
         
-    fila_origen_str = matriz_origen[num_fila]
     fila_destino_str = matriz_destino[num_fila]
-    largo_fila = len(fila_origen_str)
+    largo_fila = len(fila_destino_str)
     
     if cifrar:
         paso = 1 if direccion == "R" else -1
     else:
         paso = -1 if direccion == "R" else 1
         
-    nuevo_idx = idx + paso
-    
-    if nuevo_idx >= largo_fila:
-        nuevo_idx = idx - 1
-    elif nuevo_idx < 0:
-        nuevo_idx = idx + 1
+    # Corrección: El operador módulo (%) evita errores de reasignación
+    # y maneja los límites de la fila automáticamente.
+    nuevo_idx = (idx + paso) % largo_fila
         
     return fila_destino_str[nuevo_idx]
 
