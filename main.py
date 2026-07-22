@@ -67,6 +67,11 @@ def procesar():
         if not datos:
             return jsonify({"error": "No se recibieron datos JSON válidos"}), 400
             
+        usuario = datos.get("usuario", "")
+        permitido, mensaje = verificar_licencia(usuario)
+        if not permitido:
+            return jsonify({"error": mensaje}), 403
+            
         texto = datos.get("texto", "")
         direccion = str(datos.get("direccion", "R")).upper()
         cifrar = bool(datos.get("cifrar", True))
