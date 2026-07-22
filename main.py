@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
@@ -40,13 +41,13 @@ def procesar_caracter(car, direccion, cifrar):
     else:
         paso = -1 if direccion == "R" else 1
         
+    # Corrección para límites
     nuevo_idx = (idx + paso) % largo_fila
         
     return fila_destino_str[nuevo_idx]
 
 def procesar_mensaje(texto, direccion, cifrar=True):
     resultado = []
-    # Convertimos a string de manera segura para evitar errores si envían números
     for car in str(texto).upper():
         resultado.append(procesar_caracter(car, direccion, cifrar))
     return "".join(resultado)
@@ -54,7 +55,6 @@ def procesar_mensaje(texto, direccion, cifrar=True):
 @app.route('/procesar', methods=['POST'])
 def procesar():
     try:
-        # force=True intenta leer el JSON incluso si falta el header Content-Type
         datos = request.get_json(silent=True, force=True)
         if not datos:
             return jsonify({"error": "No se recibieron datos JSON válidos"}), 400
@@ -68,8 +68,9 @@ def procesar():
         return jsonify({"resultado": resultado_texto})
 
     except Exception as e:
-        # Captura cualquier otro error imprevisto y devuelve una respuesta limpia en lugar de tumbar la API
         return jsonify({"error": "Ocurrió un error en el servidor", "detalle": str(e)}), 500
 
+# IMPORTANTE PARA RENDER: Lee el puerto que asigna el servidor automáticamente
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
