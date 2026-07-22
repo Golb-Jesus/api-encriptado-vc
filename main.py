@@ -40,31 +40,36 @@ def procesar_caracter(car, direccion, cifrar):
     else:
         paso = -1 if direccion == "R" else 1
         
-    # Corrección: El operador módulo (%) evita errores de reasignación
-    # y maneja los límites de la fila automáticamente.
     nuevo_idx = (idx + paso) % largo_fila
         
     return fila_destino_str[nuevo_idx]
 
 def procesar_mensaje(texto, direccion, cifrar=True):
     resultado = []
-    for car in texto.upper():
+    # Convertimos a string de manera segura para evitar errores si envían números
+    for car in str(texto).upper():
         resultado.append(procesar_caracter(car, direccion, cifrar))
     return "".join(resultado)
 
 @app.route('/procesar', methods=['POST'])
 def procesar():
-    datos = request.get_json()
-    if not datos:
-        return jsonify({"error": "No se recibieron datos"}), 400
+    try:
+        # force=True intenta leer el JSON incluso si falta el header Content-Type
+        datos = request.get_json(silent=True, force=True)
+        if not datos:
+            return jsonify({"error": "No se recibieron datos JSON válidos"}), 400
+            
+        texto = datos.get("texto", "")
+        direccion = str(datos.get("direccion", "R")).upper()
+        cifrar = bool(datos.get("cifrar", True))
         
-    texto = datos.get("texto", "")
-    direccion = datos.get("direccion", "R")
-    cifrar = datos.get("cifrar", True)
-    
-    resultado_texto = procesar_mensaje(texto, direccion, cifrar=cifrar)
-    
-    return jsonify({"resultado": resultado_texto})
+        resultado_texto = procesar_mensaje(texto, direccion, cifrar=cifrar)
+        
+        return jsonify({"resultado": resultado_texto})
+
+    except Exception as e:
+        # Captura cualquier otro error imprevisto y devuelve una respuesta limpia en lugar de tumbar la API
+        return jsonify({"error": "Ocurrió un error en el servidor", "detalle": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
