@@ -5,7 +5,7 @@ app = Flask(__name__)
 CORS(app)
 
 class MotorCifradoCelularVecinal:
-    def __init__(self):
+        def __init__(self):
         # Filas de letras (Mayúsculas)
         self.filas_letras = [
             "QWERTYUIOP",  # 10
@@ -21,7 +21,7 @@ class MotorCifradoCelularVecinal:
             "*_':;!?"
         ]
 
-    def procesar_caracter(self, car, direccion, cifrar):
+        def procesar_caracter(self, car, direccion, cifrar):
         # 1. Determinar en qué matriz buscar (Letras o Símbolos)
         matriz_origen = self.filas_letras if cifrar else self.filas_simbolos
         matriz_destino = self.filas_simbolos if cifrar else self.filas_letras
@@ -63,7 +63,7 @@ class MotorCifradoCelularVecinal:
         # 4. Devolver el carácter transformado de la matriz opuesta
         return fila_destino_str[nuevo_idx]
 
-    def procesar_mensaje(self, texto, direccion, cifrar=True):
+        def procesar_mensaje(self, texto, direccion, cifrar=True):
         resultado = []
         # Procesamos en mayúsculas para evitar choques con el teclado
         for car in texto.upper():
@@ -73,7 +73,7 @@ class MotorCifradoCelularVecinal:
 motor = MotorCifradoCelularVecinal()
 
 @app.route('/procesar', methods=['POST'])
-def procesar():
+    def procesar():
     datos = request.get_json()
     if not datos:
         return jsonify({"error": "No se recibieron datos"}), 400
