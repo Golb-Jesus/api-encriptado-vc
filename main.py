@@ -2,6 +2,28 @@ import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
+import csv
+import urllib.request
+
+SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlXTOefoSH6jgC8QW3XMKFMfespM0EGgjdYQUq7cebpJVMt1p4JvKvZtuSI9honNZN0JJux7UWU8Dq/pub?gid=0&single=true&output=csv"
+
+def verificar_licencia(usuario_ingresado):
+    if not usuario_ingresado:
+        return False, "Ingresa un usuario."
+    try:
+        req = urllib.request.urlopen(SHEET_CSV_URL)
+        lineas = [linea.decode('utf-8') for linea in req.readlines()]
+        lector = csv.DictReader(lineas)
+        for fila in lector:
+            if fila.get("usuario", "").strip().upper() == usuario_ingresado.strip().upper():
+                if fila.get("estado", "").strip().lower() == "activo":
+                    return True, "OK"
+                else:
+                    return False, f"Usuario '{usuario_ingresado}' suspendido."
+        return False, f"El usuario '{usuario_ingresado}' no existe."
+    except Exception as e:
+        return False, "Error al validar la licencia."
+
 app = Flask(__name__)
 CORS(app)
 
