@@ -4,6 +4,7 @@ from flask_cors import CORS
 
 import csv
 import urllib.request
+import datetime
 
 SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlXTOefoSH6jgC8QW3XMKFMfespM0EGgjdYQUq7cebpJVMt1p4JvKvZtuSI9honNZN0JJux7UWU8Dq/pub?gid=0&single=true&output=csv"
 
@@ -16,10 +17,19 @@ def verificar_licencia(usuario_ingresado):
         lector = csv.DictReader(lineas)
         for fila in lector:
             if fila.get("usuario", "").strip().upper() == usuario_ingresado.strip().upper():
-                if fila.get("estado", "").strip().lower() == "activo":
-                    return True, "OK"
-                else:
-                    return False, f"Usuario '{usuario_ingresado}' suspendido."
+                if fila.get("estado", "").strip().lower() != "activo":
+                    return False, f"Usuario '{usuario_ingresado}' suspendido o inactivo."
+                
+                fecha_venc_str = fila.get("fecha_vencimiento", "").strip()
+                if fecha_venc_str:
+                    try:
+                        fecha_limite = datetime.datetime.strptime(fecha_venc_str, "%Y-%m-%d").date()
+                        if datetime.date.today() > fecha_limite:
+                            return False, "Tu periodo de prueba / licencia ha expirado."
+                    except ValueError:
+                        return False, "Error en formato de fecha en el servidor."
+                
+                return True, "OK"
         return False, f"El usuario '{usuario_ingresado}' no existe."
     except Exception as e:
         return False, "Error al validar la licencia."
